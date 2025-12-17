@@ -18,14 +18,15 @@ from fastapi.staticfiles import StaticFiles
 env_path = Path(__file__).parent.parent.parent / '.env'
 load_dotenv(dotenv_path=env_path)
 
-# Import services
-import app.services.data_loader as data_loader_module
-import app.services.gemini_service as gemini_module
-import app.services.freshdesk as freshdesk_module
-import app.core.orchestrator as orchestrator_module
+# Import services using relative imports
+from . import services
+from .services import data_loader as data_loader_module
+from .services import gemini_service as gemini_module
+from .services import freshdesk as freshdesk_module
+from .core import orchestrator as orchestrator_module
 
 # Import routers
-from app.routers import health, api
+from .routers import health, api
 
 
 @asynccontextmanager
@@ -88,7 +89,7 @@ async def lifespan(app: FastAPI):
         
         # Initialize Orchestrator
         print("\n🎯 Initializing Orchestrator...")
-        from app.core.prompts import PromptsManager
+        from .core.prompts import PromptsManager
         orchestrator = orchestrator_module.Orchestrator(
             product_db=product_db,
             gemini=gemini_service,

@@ -1,0 +1,26 @@
+services:
+  # Single Web Service - Backend serves frontend (Recommended for Free Tier)
+  - type: web
+    name: agent-assist-console
+    env: python
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server.app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: FILE_SEARCH_CORPUS_ID
+        sync: false
+      - key: FRESHDESK_DOMAIN
+        sync: false
+      - key: FRESHDESK_API_KEY
+        sync: false
+      - key: DATA_DIR
+        value: data
+      - key: ALLOWED_ORIGINS
+        generateValue: true  # Will auto-generate with your service URL
+    healthCheckPath: /health

@@ -10,9 +10,16 @@
 
 // Configuration
 const CONFIG = {
-    apiBaseUrl: window.location.origin.includes('localhost') 
-        ? 'http://localhost:8000' 
-        : window.location.origin,
+    apiBaseUrl: (() => {
+        // Development: Use localhost backend
+        if (window.location.origin.includes('localhost')) {
+            return 'http://localhost:8000';
+        }
+        // Production: Check for environment variable or use same origin
+        // For Render deployment, you can set BACKEND_URL in your static site config
+        const backendUrl = window.BACKEND_URL || window.location.origin;
+        return backendUrl;
+    })(),
     endpoints: {
         chat: '/api/chat',
         freshdesk: '/api/freshdesk',
@@ -169,37 +176,47 @@ async function handleChatSubmit(e) {
                 model_mode: AppState.config.modelMode
             })
         });
-        
+
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        
-        const data = await response.json();
-        
+
+        let data;
+        try {
+            data = await response.json();
+        } catch (jsonErr) {
+            throw new Error('Malformed JSON response from server.');
+        }
+
+        // Validate response structure
+        if (!data || typeof data.markdown_response !== 'string') {
+            throw new Error('Malformed API response: missing markdown_response.');
+        }
+
         // Remove typing indicator
         removeTypingIndicator();
-        
+
         // Add AI response
         addMessage('assistant', data.markdown_response, data);
-        
+
         // Update context
-        AppState.context.currentAssets = data.media_assets;
-        AppState.context.matchedProduct = data.matched_product;
-        AppState.context.sources = data.sources;
+        AppState.context.currentAssets = data.media_assets || null;
+        AppState.context.matchedProduct = data.matched_product || null;
+        AppState.context.sources = Array.isArray(data.sources) ? data.sources : [];
         AppState.context.latestResponse = data;
-        
+
         // Update media panel
         if (data.media_assets) {
             renderMediaPanel(data.media_assets, data.matched_product);
         }
-        
+
         // Enable export button if ticket ID is set
         if (AppState.freshdesk.ticketId) {
             elements.exportBtn.disabled = false;
         }
-        
+
         console.log('✓ Response received', data);
-        
+
     } catch (error) {
         console.error('✗ Error processing query:', error);
         removeTypingIndicator();
@@ -479,7 +496,7 @@ async function handleFreshdeskExport() {
             AppState.context.latestResponse.model_used,
             AppState.context.sources
         );
-        
+
         const response = await fetch(`${CONFIG.apiBaseUrl}${CONFIG.endpoints.freshdesk}`, {
             method: 'POST',
             headers: {
@@ -490,16 +507,25 @@ async function handleFreshdeskExport() {
                 formatted_note: formattedNote
             })
         });
-        
-        const data = await response.json();
-        
+
+        let data;
+        try {
+            data = await response.json();
+        } catch (jsonErr) {
+            throw new Error('Malformed JSON response from server.');
+        }
+
+        if (!data || typeof data.success !== 'boolean') {
+            throw new Error('Malformed API response: missing success field.');
+        }
+
         if (data.success) {
             alert(`✅ Successfully exported to ticket #${data.ticket_id}`);
             console.log('✓ Exported to Freshdesk', data);
         } else {
             throw new Error(data.error || 'Export failed');
         }
-        
+
     } catch (error) {
         console.error('✗ Freshdesk export error:', error);
         alert(`❌ Export failed: ${error.message}`);

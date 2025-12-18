@@ -157,10 +157,15 @@ app.include_router(api.router)
 
 
 # Serve static files (frontend) if available
-static_dir = Path(__file__).parent.parent.parent / "client"
+# In Docker: /app/server/app/main.py -> /app/client/
+# Locally: .../server/app/main.py -> .../client/
+static_dir = Path(__file__).resolve().parent.parent.parent / "client"
+print(f"📁 Looking for static files at: {static_dir}")
 if static_dir.exists():
     app.mount("/", StaticFiles(directory=str(static_dir), html=True), name="static")
     print(f"📁 Serving static files from: {static_dir}")
+else:
+    print(f"⚠️ Static directory not found at: {static_dir}")
 
 
 # Root endpoint

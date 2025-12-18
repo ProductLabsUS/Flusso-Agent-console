@@ -46,9 +46,14 @@ class ProductDatabase:
     """
     
     def __init__(self, data_dir: str = "data"):
-        # FIX: Resolve paths relative to THIS file, not the command line execution dir
+        # Resolve paths relative to THIS file's location
+        # In Docker: /app/server/app/services/data_loader.py -> /app/server/
+        # Locally: .../server/app/services/data_loader.py -> .../server/
         base_dir = Path(__file__).resolve().parent.parent.parent  # Goes up to /server/
         self.data_dir = base_dir / data_dir
+        
+        # Debug: print resolved path for troubleshooting
+        print(f"📂 Data directory resolved to: {self.data_dir}")
         
         self.media_data: Dict[str, Any] = {}
         self.catalog_df: Optional[pd.DataFrame] = None

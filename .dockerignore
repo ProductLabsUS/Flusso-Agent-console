@@ -1,0 +1,60 @@
+# Git
+.git/
+.gitignore
+
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment files (secrets loaded via Cloud Run env vars)
+.env
+.env.local
+.env.*
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+.pytest_cache/
+test_*.py
+*_test.py
+
+# Documentation (not needed in container)
+*.md
+!README.md
+
+# Render/other deployment configs (not needed for Cloud Run)
+render.yaml
+build.sh
+start.sh
+nginx.conf
+docker-compose.yml
+
+# Local development files
+.venv/

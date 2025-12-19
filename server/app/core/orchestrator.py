@@ -159,8 +159,10 @@ class Orchestrator:
                 "documents": product_context.documents
             }
             print(f"    - Specs: {len(product_context.specs)} fields")
-            print(f"    - Videos: {len(product_context.media.get('videos', []))}")
-            print(f"    - Images: {len(product_context.media.get('images', []))}")
+            # Defensive: Ensure media is a dict before using .get
+            media = product_context.media if isinstance(product_context.media, dict) else {"videos": [], "images": []}
+            print(f"    - Videos: {len(media.get('videos', []))}")
+            print(f"    - Images: {len(media.get('images', []))}")
             print(f"    - Documents: {len(product_context.documents)}")
             
             # Targeted file search
@@ -243,10 +245,12 @@ class Orchestrator:
         # Build media assets structure
         media_assets = None
         if product_context:
+            # Defensive: Ensure media is a dict before using .get
+            media = product_context.media if isinstance(product_context.media, dict) else {"videos": [], "images": []}
             media_assets = {
                 "specs": product_context.specs,
-                "videos": product_context.media.get("videos", []),
-                "images": product_context.media.get("images", []),
+                "videos": media.get("videos", []),
+                "images": media.get("images", []),
                 "documents": product_context.documents
             }
         

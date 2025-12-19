@@ -211,11 +211,15 @@ class ProductDatabase:
             "images": []
         }
         documents = []
-        
+
         if model_number in self.media_data:
             media_item = self.media_data[model_number]
             metadata = media_item.get('metadata', {})
-            
+
+            # Defensive: If media is not a dict, reset to default
+            if not isinstance(media, dict):
+                media = {"videos": [], "images": []}
+
             # Extract image information
             if 'savedAs' in media_item:
                 media["images"].append({
@@ -223,7 +227,7 @@ class ProductDatabase:
                     "filename": media_item['savedAs'],
                     "original_url": self._normalize_url(media_item.get('originalUrl', ''))
                 })
-            
+
             # Extract video links from metadata
             video_links = [
                 metadata.get('Installation_video_Link', ''),
@@ -231,14 +235,14 @@ class ProductDatabase:
                 metadata.get('Lifestyle_Video_Link', '')
             ]
             media["videos"] = [self._normalize_url(v) for v in video_links if v and v != '']
-            
+
             # Extract document information
             doc_fields = [
                 ('Spec_Sheet_File_Name', 'Spec_Sheet_Full_URL', 'Specification Sheet'),
                 ('Installation_Manual_File_Name', 'Installation_manual_Full_URL', 'Installation Manual'),
                 ('Parts_Diagram_File_Name', 'Part_Diagram_Full_URL', 'Parts Diagram')
             ]
-            
+
             for file_field, url_field, doc_type in doc_fields:
                 filename = metadata.get(file_field)
                 if filename and filename != '':
@@ -248,7 +252,15 @@ class ProductDatabase:
                         "title": filename,  # Use filename as document name/title
                         "url": self._normalize_url(metadata.get(url_field, ''))
                     })
-        
+
+        # Defensive: Ensure media is a dict with required keys
+        if not isinstance(media, dict):
+            media = {"videos": [], "images": []}
+        if "videos" not in media or not isinstance(media["videos"], list):
+            media["videos"] = []
+        if "images" not in media or not isinstance(media["images"], list):
+            media["images"] = []
+
         return ProductContext(
             model_number=model_number,
             specs=specs,

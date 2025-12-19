@@ -14,4 +14,5 @@ COPY client/ ./client/
 
 EXPOSE 8080
 
-CMD ["uvicorn", "server.app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Use shell form to allow environment variable substitution
+CMD uvicorn server.app.main:app --host 0.0.0.0 --port $PORT

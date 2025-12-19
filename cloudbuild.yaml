@@ -1,11 +1,11 @@
 ﻿substitutions:
-  # Updated to use Artifact Registry (AR) instead of GCR
+  # These match your new Artifact Registry setup
   _IMAGE_NAME: "flusso-agent-console"
   _AR_LOCATION: "us-west2"
   _AR_REPOSITORY: "flusso-images"
 
 steps:
-  # 1. Build the Docker image
+  # 1. Build the Docker image using the Dockerfile in your repo
   - name: "gcr.io/cloud-builders/docker"
     args: 
       - "build"
@@ -13,13 +13,13 @@ steps:
       - "${_AR_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPOSITORY}/${_IMAGE_NAME}:${SHORT_SHA}"
       - "."
 
-  # 2. Push the image to Artifact Registry
+  # 2. Push the image to your new Artifact Registry repo
   - name: "gcr.io/cloud-builders/docker"
     args: 
       - "push" 
       - "${_AR_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPOSITORY}/${_IMAGE_NAME}:${SHORT_SHA}"
 
-  # 3. Deploy the image to Cloud Run
+  # 3. Deploy the image to Cloud Run in us-west2
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: gcloud
     args:
@@ -30,8 +30,9 @@ steps:
       - "${_AR_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPOSITORY}/${_IMAGE_NAME}:${SHORT_SHA}"
       - "--region"
       - "us-west2"
+      - "--allow-unauthenticated"
 
-# Required because you are using a custom service account
+# Critical for custom service accounts to avoid trigger errors
 options:
   logging: CLOUD_LOGGING_ONLY
 

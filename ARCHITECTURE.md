@@ -100,12 +100,12 @@ A dedicated chatbot interface where human agents can:
 Agent-Assistance-Bot/
 ├── client/                          # FRONTEND
 │   ├── index.html                   # Main UI (3-Panel Layout)
-│   ├── styles.css                   # Custom styles on top of Tailwind
+│   ├── styles.css                   # Custom styles for the frontend
 │   ├── app.js                       # Application logic
-│   └── icons/                       # SVG Icons
-│       ├── search.svg
-│       ├── export.svg
-│       └── settings.svg
+│   ├── config.js                    # Frontend configuration
+│   └── icons/                       # Icons and images
+│       ├── favicon.ico              # Website favicon (browser tab icon)
+│       └── logo.png                 # Project logo
 │
 ├── server/                          # BACKEND
 │   ├── app/
@@ -125,15 +125,21 @@ Agent-Assistance-Bot/
 │   │   │   └── health.py            # Health check endpoint
 │   │   └── main.py                  # FastAPI application entry
 │   ├── data/
-│   │   ├── product_media.json       # Media assets (videos, images, PDFs)
-│   │   └── product_catalog.csv      # Product specifications
-│   └── requirements.txt
+│   │   ├── metadata_manifest.json   # Data manifest (JSON)
+│   │   └── Product-2025-11-12.xlsx  # Example Excel data file
+│   └── requirements.txt             # Python dependencies for backend
 │
-├── .env                             # Environment variables
-├── .env.example                     # Environment template
-├── docker-compose.yml               # Container orchestration
+├── .env                             # Environment variables (not committed)
+├── .env.example                     # Example environment template
 ├── Dockerfile                       # Container definition
+├── nginx.conf                       # NGINX config (if used)
 ├── README.md                        # Setup and usage guide
+├── render.yaml                      # Render.com deployment config
+├── cloudbuild.yaml                  # Google Cloud Build config
+├── build.sh / start.sh              # Helper scripts (optional)
+├── documentation/                   # Project documentation (structure, install, etc.)
+│   ├── structure_overview.md
+│   └── installation_manual.md
 └── ARCHITECTURE.md                  # This document
 ```
 
@@ -519,26 +525,39 @@ const AppState = {
         apiBaseUrl: 'http://localhost:8000',
         modelMode: 'flash'  // or 'reasoning'
     },
-    
     // Chat data
     chat: {
         messages: [],       // [{role: 'user'|'assistant', content: str}]
         isLoading: false
     },
-    
     // Current context
     context: {
         currentAssets: null,  // Media assets from latest response
         matchedProduct: null, // Model number if found
         sources: []           // Source references
     },
-    
     // Freshdesk
     freshdesk: {
         ticketId: null
     }
 };
 ```
+
+**Static File Serving and Favicon:**
+
+- The backend (FastAPI) is configured to serve all files in the `client/` directory as static files, including `index.html`, CSS, JS, and images.
+- The favicon (`/favicon.ico`) is served from `client/icons/favicon.ico` via a dedicated FastAPI route, so browsers display the correct icon in the tab.
+---
+
+## 🆕 Notable Recent Changes
+
+- **Static file serving**: The backend now serves the frontend directly from the `client/` directory, making deployment and local development easier.
+- **Favicon support**: `/favicon.ico` is now served from the correct location, eliminating browser 404 errors.
+- **Documentation folder**: Added `documentation/` with beginner-friendly guides for structure and installation.
+- **Updated data files**: Data files are now in Excel and JSON format, with a manifest for easier management.
+- **Environment example**: `.env.example` is provided for easy setup of environment variables.
+
+---
 
 **Key Functions:**
 

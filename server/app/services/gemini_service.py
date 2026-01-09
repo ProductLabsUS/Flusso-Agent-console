@@ -62,12 +62,11 @@ class GeminiService:
                 "model_used": str
             }
         """
+        from google.genai.errors import ServerError
         try:
             model_name = self.models.get(mode, self.models["flash"])
-            
             # Build the prompt with context
             full_prompt = self._build_prompt(query, context)
-            
             # Prepare configuration
             config = types.GenerateContentConfig(
                 temperature=0.2 if mode == "flash" else 0.4,
@@ -76,23 +75,32 @@ class GeminiService:
                 max_output_tokens=4096,
                 system_instruction=system_prompt if system_prompt else None
             )
-            
             # Generate response
             response = self.client.models.generate_content(
                 model=model_name,
                 contents=full_prompt,
                 config=config
             )
-            
             # Extract sources from context
             sources = self._extract_sources(context)
-            
             return {
                 "response": response.text,
                 "sources": sources,
                 "model_used": model_name
             }
-            
+        except ServerError as se:
+            # Handle Gemini model overload (503)
+            if hasattr(se, "status_code") and se.status_code == 503:
+                print("✗ Gemini model overloaded: returning fallback message.")
+                return {
+                    "response": "Sorry, the LLM model is currently overloaded. Please try again later.",
+                    "sources": [],
+                    "model_used": "unavailable"
+                }
+            print(f"✗ Error generating response: {se}")
+            import traceback
+            traceback.print_exc()
+            raise
         except Exception as e:
             print(f"✗ Error generating response: {e}")
             import traceback

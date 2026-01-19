@@ -76,6 +76,16 @@ async def process_chat(request: ChatRequest) -> ChatResponse:
         
     except Exception as e:
         print(f"✗ Error processing chat: {e}")
+        error_message = str(e)
+        
+        # Check if it's a model overload error
+        if "503" in error_message or "overloaded" in error_message.lower():
+            raise HTTPException(
+                status_code=503,
+                detail="The model is currently overloaded. Please try switching to another model (Flash or Reasoning mode) and try again."
+            )
+        
+        # Generic error
         raise HTTPException(
             status_code=500,
             detail=f"Error processing query: {str(e)}"

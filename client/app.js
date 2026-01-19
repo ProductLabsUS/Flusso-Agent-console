@@ -163,9 +163,17 @@ async function handleChatSubmit(e) {
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ API Error Response:', errorText);
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            try {
+                const errorData = await response.json();
+                if (errorData.detail) {
+                    errorMessage = errorData.detail;
+                }
+            } catch {
+                const errorText = await response.text();
+                console.error('❌ API Error Response:', errorText);
+            }
+            throw new Error(errorMessage);
         }
 
         // CRITICAL FIX: Read the full response text first

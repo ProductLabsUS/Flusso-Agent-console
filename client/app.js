@@ -373,6 +373,26 @@ function renderMediaPanel(assets, productName) {
     
     // Specifications
     if (specs && Object.keys(specs).length > 0) {
+        // Define which fields to display (in this order)
+        const fieldsToDisplay = [
+            "Common_Group_Number",
+            'Product_Title',
+            "Item_UPC_Number",
+            'Finish',
+            'Product_Category',
+            'Sub_Product_Category',
+            'Collection',
+            'Style',
+            'List_Price',
+            'Product_Status',
+            'Warranty',
+        ];
+        
+        // Filter specs to only include fields in the whitelist (in order)
+        const filteredSpecs = fieldsToDisplay
+            .filter(field => specs[field] !== undefined && specs[field] !== null && specs[field] !== '')
+            .map(field => [field, specs[field]]);
+        
         html += `
             <div class="mb-6">
                 <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
@@ -385,9 +405,7 @@ function renderMediaPanel(assets, productName) {
                 <div class="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
                     <table class="spec-table w-full">
                         <tbody>
-                            ${Object.entries(specs)
-                                .filter(([key]) => !key.startsWith('_') && key !== 'Model_NO' && key !== 'Product_Name')
-                                .slice(0, 10)
+                            ${filteredSpecs
                                 .map(([key, value]) => `
                                     <tr class="border-b border-gray-200 last:border-b-0">
                                         <td class="px-3 py-2 font-medium text-gray-600">${escapeHtml(formatKey(key))}</td>
